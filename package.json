@@ -2,8 +2,9 @@
   "name": "autobracket",
   "displayName": "AutoBracket",
   "description": "Automatically inserts missing closing brackets at the end of the line.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "wuqzh8",
+  "icon": "assets/icon.png",
   "engines": {
     "vscode": "^1.96.0"
   },

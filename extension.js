@@ -1,10 +1,17 @@
 // The module 'vscode' contains the VS Code extensibility API
+
+
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 
+const pair = {
+	'(': ')',
+	'{': '}',
+	'[': ']'
+};
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -13,100 +20,68 @@ function activate(context) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('autoBracket.CompleteParenthesis', () => {
 			const editor = vscode.window.activeTextEditor;
-			console.log("editor", editor);
-
-			if (editor) {
-				autoCompleteBracket(editor, '(');
-			}
+			editor && completeBracket(editor, '(');
 		}),
 
-		vscode.commands.registerCommand('autoBracke.CompleteCurlyBrace', () => {
+		vscode.commands.registerCommand('autoBracket.CompleteCurlyBrace', () => {
 			const editor = vscode.window.activeTextEditor;
-			if (editor) {
-				autoCompleteBracket(editor, '{');
-			}
+			editor && completeBracket(editor, '{');
 		}),
 
 
 		vscode.commands.registerCommand('autoBracket.CompleteSquareBracket', () => {
 			const editor = vscode.window.activeTextEditor;
-			if (editor) {
-				autoCompleteBracket(editor, '[');
-			}
+			editor && completeBracket(editor, '[')
 		}),
 
 		vscode.commands.registerCommand('autoBracket.CompleteAuto', () => {
 			const editor = vscode.window.activeTextEditor;
-			if (editor) {
-				autoCompleteBracket(editor, '(');
-				autoCompleteBracket(editor, '{');
-				autoCompleteBracket(editor, '[');
-			}
+			editor && completeBracket(editor, 'all')
 		})
 	);
 }
+
+
+/**
+ * 向行尾插入文本的函数
+ * @param {vscode.TextEditor} editor
+ * @param {string} text
+ */
+function writeToEndOfLine(editor, text) {
+	const selection = editor.selection;
+	const currentLineText = editor.document.lineAt(selection.active.line).text;
+
+	// 创建一个范围，表示行尾
+	const range = new vscode.Range(selection.active.line, currentLineText.length, selection.active.line, currentLineText.length);
+
+	// 在行尾插入文本
+	editor.edit((editBuilder) => {
+		editBuilder.insert(range.end, text);
+	}).then(() => {
+		// vscode.window.showInformationMessage(`Closing ${bracketType} added!`);
+	});
+}
+
 
 // 补全指定括号
 /**
  * @param {vscode.TextEditor} editor
  * @param {string} bracketType
  */
-function autoCompleteBracket(editor, bracketType) {
+function completeBracket(editor, bracketType) {
 	const selection = editor.selection;
-	const currentLineText = editor.document.lineAt(selection.active.line).text;
-
+	const lineText = editor.document.lineAt(selection.active.line).text;
+	if (bracketType == 'all') {
+		const updateText = calMissBrackets(lineText)
+		updateText && writeToEndOfLine(editor, updateText)
+		return
+	}
 	// 判断缺失的括号数量
-	const missingCount = MissingClosingBracket(currentLineText, bracketType);
-
+	const missingCount = charCount(lineText, bracketType)-charCount(lineText, pair[bracketType])
 	if (missingCount > 0) {
 		// 补全缺失的括号
-		const updatedText = bracketType === '(' ? ')'.repeat(missingCount) :
-			bracketType === '{' ? '}'.repeat(missingCount) :
-				']'.repeat(missingCount);
-
-		const range = new vscode.Range(selection.active.line, currentLineText.length, selection.active.line, currentLineText.length);
-		editor.edit((/** @type {{ insert: (arg0: vscode.Position, arg1: string) => void; }} */ editBuilder) => {
-			editBuilder.insert(range.end, updatedText); // 插入缺失的括号
-		}).then(() => {
-			// vscode.window.showInformationMessage(`Closing ${bracketType} added!`);
-		});
-	// } else {
-	// 	vscode.window.showInformationMessage(`No ${bracketType} missing!`);
+		writeToEndOfLine(editor, pair[bracketType].repeat(missingCount))
 	}
-}
-
-
-/**
- * @param {string} line
- * @param {string} bracketType
- */
-function MissingClosingBracket(line, bracketType) {
-	let openBracket, closeBracket;
-	// 根据传入的括号类型判断对应的开括号和闭括号
-	switch (bracketType) {
-		case '(':
-			openBracket = '(';
-			closeBracket = ')';
-			break;
-		case '{':
-			openBracket = '{';
-			closeBracket = '}';
-			break;
-		case '[':
-			openBracket = '[';
-			closeBracket = ']';
-			break;
-		default:
-			throw new Error('Unsupported bracket type');
-	}
-	// 统计当前行中的开括号和闭括号
-	// const openCount = (line.match(new RegExp(`\\${openBracket}`, 'g')) || []).length;
-	// const closeCount = (line.match(new RegExp(`\\${closeBracket}`, 'g')) || []).length;
-	const openCount = charCount(line, openBracket)
-	const closeCount = charCount(line, closeBracket)
-
-	// 返回缺失的括号数量
-	return openCount - closeCount;
 }
 
 /**
@@ -122,6 +97,37 @@ function charCount(line, char) {
 	}
 	return count;
 }
+
+/**
+ * @param {string} line
+ */
+function calMissBrackets(line) {
+	const stack = []; // 用来保存未匹配的括号
+
+	let result = '';
+
+	for (let char of line) {
+		if (char === '(' || char === '{' || char === '[') {
+			// 如果是打开括号，压入栈
+			stack.push(char);
+		} else if (char === ')' || char === '}' || char === ']') {
+			// 如果是关闭括号，检查栈顶是否有匹配的打开括号
+			if (stack.length > 0 && pair[stack[stack.length - 1]] === char) {
+				stack.pop(); // 匹配成功，弹出栈顶元素
+			}
+		}
+	}
+
+	// 将剩余的未匹配的括号补全
+	while (stack.length > 0) {
+		const openBracket = stack.pop();
+		result += pair[openBracket]; // 补充相应的闭合括号
+	}
+
+	return result;
+}
+
+
 
 
 // This method is called when your extension is deactivated

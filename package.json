@@ -2,25 +2,42 @@
   "name": "autobracket",
   "displayName": "AutoBracket",
   "description": "Automatically inserts missing closing brackets at the end of the line.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "wuqzh8",
   "icon": "assets/icon.png",
+  "keywords": [
+    "auto bracket",
+    "bracket",
+    "complete",
+    "complete bracket"
+  ],
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-  ],
+  "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
     "commands": [
-      {"command": "autoBracket.CompleteParenthesis", "title": "complete parenthesis"},
-      {"command": "autoBracket.CompleteCurlyBrace", "title": "complete curly brace"},
-      {"command": "autoBracket.CompleteSquareBracket", "title": "complete square bracket"},
-      {"command": "autoBracket.CompleteAuto", "title": "complete all brackets auto"}
-  ]
+      {
+        "command": "autoBracket.CompleteParenthesis",
+        "title": "%autobracket.commands.CompleteParenthesis.title%"
+      },
+      {
+        "command": "autoBracket.CompleteCurlyBrace",
+        "title": "%autobracket.commands.CompleteCurlyBrace.title%"
+      },
+      {
+        "command": "autoBracket.CompleteSquareBracket",
+        "title": "%autobracket.commands.CompleteSquareBracket.title%"
+      },
+      {
+        "command": "autoBracket.CompleteAuto",
+        "title": "%autobracket.commands.CompleteAuto.title%"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",

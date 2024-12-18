@@ -1,0 +1,6 @@
+{
+    "autobracket.commands.CompleteParenthesis.title": "自动括号: 补全圆括号",
+    "autobracket.commands.CompleteCurlyBrace.title": "自动括号: 补全花括号",
+    "autobracket.commands.CompleteSquareBracket.title": "自动括号: 补全方括号",
+    "autobracket.commands.CompleteAuto.title":"自动括号: 补全所有括号"
+}

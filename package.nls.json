@@ -1,0 +1,6 @@
+{
+    "autobracket.commands.CompleteParenthesis.title": "autobracket: complete parenthesis",
+    "autobracket.commands.CompleteCurlyBrace.title": "autobracket: complete curly brace",
+    "autobracket.commands.CompleteSquareBracket.title": "autobracket: complete square braket",
+    "autobracket.commands.CompleteAuto.title":"autobracket: complete all brakets"
+}
